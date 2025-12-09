@@ -1,0 +1,1436 @@
+openapi: 3.0.3
+info:
+  title: License Management System API
+  description: |
+    Comprehensive API for managing licenses, subscriptions, and customers.
+    Supports both web frontend and mobile SDK integrations.
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: https://api.example.com
+    description: Production server
+  - url: http://localhost:8080
+    description: Development server
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT Bearer token for frontend API authentication
+
+    SDKApiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key obtained from /sdk/auth/login for SDK authentication
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Error description"
+
+    AdminLoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: "admin@example.com"
+        password:
+          type: string
+          format: password
+          example: "admin_password"
+
+    AdminLoginResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        token:
+          type: string
+          example: "jwt_token_here"
+        email:
+          type: string
+          example: "admin@example.com"
+        expires_in:
+          type: integer
+          example: 3600
+
+    CustomerLoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: "customer@example.com"
+        password:
+          type: string
+          format: password
+          example: "customer_password"
+
+    CustomerLoginResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        token:
+          type: string
+          example: "jwt_token_here"
+        name:
+          type: string
+          example: "John Doe"
+        phone:
+          type: string
+          example: "+1234567890"
+        expires_in:
+          type: integer
+          example: 3600
+
+    CustomerSignupRequest:
+      type: object
+      required:
+        - name
+        - email
+        - password
+        - phone
+      properties:
+        name:
+          type: string
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          example: "customer@example.com"
+        password:
+          type: string
+          format: password
+          example: "customer_password"
+        phone:
+          type: string
+          example: "+1234567890"
+
+    CustomerSignupResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Account created successfully"
+        token:
+          type: string
+          example: "jwt_token_here"
+        name:
+          type: string
+          example: "John Doe"
+        phone:
+          type: string
+          example: "+1234567890"
+        expires_in:
+          type: integer
+          example: 3600
+
+    DashboardResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            total_customers:
+              type: integer
+              example: 150
+            active_subscriptions:
+              type: integer
+              example: 89
+            pending_requests:
+              type: integer
+              example: 12
+            total_revenue:
+              type: number
+              format: float
+              example: 45000.00
+            recent_activities:
+              type: array
+              items:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    example: "subscription_approved"
+                  customer:
+                    type: string
+                    example: "John Doe"
+                  pack:
+                    type: string
+                    example: "Premium Plan"
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2024-01-15T10:30:00Z"
+
+    Customer:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Jane Smith"
+        email:
+          type: string
+          format: email
+          example: "jane@example.com"
+        phone:
+          type: string
+          example: "+1987654321"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CustomerCreateRequest:
+      type: object
+      required:
+        - name
+        - email
+        - phone
+      properties:
+        name:
+          type: string
+          example: "Jane Smith"
+        email:
+          type: string
+          format: email
+          example: "jane@example.com"
+        phone:
+          type: string
+          example: "+1987654321"
+
+    CustomerUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Jane Smith Updated"
+        phone:
+          type: string
+          example: "+1987654321"
+
+    SubscriptionPack:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Premium Plan"
+        description:
+          type: string
+          example: "Full access to all features"
+        sku:
+          type: string
+          example: "premium-plan"
+        price:
+          type: number
+          format: float
+          example: 29.99
+        validity_months:
+          type: integer
+          example: 12
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    SubscriptionPackCreateRequest:
+      type: object
+      required:
+        - name
+        - description
+        - sku
+        - price
+        - validity_months
+      properties:
+        name:
+          type: string
+          example: "Premium Plan"
+        description:
+          type: string
+          example: "Full access to all features"
+        sku:
+          type: string
+          example: "premium-plan"
+        price:
+          type: number
+          format: float
+          example: 29.99
+        validity_months:
+          type: integer
+          minimum: 1
+          maximum: 12
+          example: 12
+
+    SubscriptionPackUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Premium Plan"
+        description:
+          type: string
+          example: "Full access to all features"
+        sku:
+          type: string
+          example: "premium-plan"
+        price:
+          type: number
+          format: float
+          example: 29.99
+        validity_months:
+          type: integer
+          minimum: 1
+          maximum: 12
+          example: 12
+
+    Subscription:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        customer_id:
+          type: integer
+          example: 1
+        pack_id:
+          type: integer
+          example: 1
+        status:
+          type: string
+          enum: [requested, approved, active, inactive, expired]
+          example: "active"
+        pack_name:
+          type: string
+          example: "Premium Plan"
+        pack_sku:
+          type: string
+          example: "premium-plan"
+        price:
+          type: number
+          format: float
+          example: 29.99
+        validity_months:
+          type: integer
+          example: 12
+        requested_at:
+          type: string
+          format: date-time
+        approved_at:
+          type: string
+          format: date-time
+        assigned_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+        deactivated_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CustomerSubscriptionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        subscription:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            pack:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Premium Plan"
+                sku:
+                  type: string
+                  example: "premium-plan"
+                price:
+                  type: number
+                  format: float
+                  example: 29.99
+                validity_months:
+                  type: integer
+                  example: 12
+            status:
+              type: string
+              enum: [requested, approved, active, inactive, expired]
+              example: "active"
+            assigned_at:
+              type: string
+              format: date-time
+              example: "2024-01-01T00:00:00Z"
+            expires_at:
+              type: string
+              format: date-time
+              example: "2025-01-01T00:00:00Z"
+            is_valid:
+              type: boolean
+              example: true
+
+    SubscriptionRequest:
+      type: object
+      required:
+        - sku
+      properties:
+        sku:
+          type: string
+          example: "premium-plan"
+
+    SubscriptionHistoryResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        history:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              pack_name:
+                type: string
+                example: "Premium Plan"
+              status:
+                type: string
+                enum: [requested, approved, active, inactive, expired]
+                example: "active"
+              assigned_at:
+                type: string
+                format: date-time
+                example: "2024-01-01T00:00:00Z"
+              expires_at:
+                type: string
+                format: date-time
+                example: "2025-01-01T00:00:00Z"
+        pagination:
+          type: object
+          properties:
+            page:
+              type: integer
+              example: 1
+            limit:
+              type: integer
+              example: 10
+            total:
+              type: integer
+              example: 2
+
+    AssignSubscriptionRequest:
+      type: object
+      required:
+        - pack_id
+      properties:
+        pack_id:
+          type: integer
+          example: 1
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Operation completed successfully"
+
+    SubscriptionCreateResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Subscription request submitted successfully"
+        subscription:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 2
+            status:
+              type: string
+              example: "requested"
+            requested_at:
+              type: string
+              format: date-time
+              example: "2024-01-15T10:30:00Z"
+
+    DeactivateResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Subscription deactivated successfully"
+        deactivated_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    SDKAuthRequest:
+      type: object
+      required:
+        - email
+        - password
+        - api_key
+      properties:
+        email:
+          type: string
+          format: email
+          example: "customer@example.com"
+        password:
+          type: string
+          format: password
+          example: "customer_password"
+        api_key:
+          type: string
+          description: SDK API key for authentication
+          example: "sk-sdk-123456789"
+
+    SDKAuthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        api_key:
+          type: string
+          description: Generated API key for SDK authentication
+          example: "sk-sdk-1234567890abcdef"
+        token:
+          type: string
+          description: Optional JWT token for additional authentication
+          example: "jwt_token_here"
+        name:
+          type: string
+          example: "John Doe"
+        phone:
+          type: string
+          example: "+1234567890"
+        expires_in:
+          type: integer
+          example: 3600
+
+paths:
+  # Frontend Authentication APIs (No JWT Required)
+  /api/admin/login:
+    post:
+      summary: Admin login
+      description: Authenticate admin user and return JWT token
+      tags:
+        - Authentication
+        - Admin
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminLoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminLoginResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/customer/login:
+    post:
+      summary: Customer login
+      description: Authenticate customer user and return JWT token
+      tags:
+        - Authentication
+        - Customer
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerLoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerLoginResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/customer/signup:
+    post:
+      summary: Customer signup
+      description: Register new customer account and return JWT token
+      tags:
+        - Authentication
+        - Customer
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerSignupRequest'
+      responses:
+        '201':
+          description: Account created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerSignupResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Frontend Dashboard APIs (JWT Required)
+  /api/v1/admin/dashboard:
+    get:
+      summary: Get admin dashboard data
+      description: Retrieve dashboard statistics and recent activities
+      tags:
+        - Dashboard
+        - Admin
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Dashboard data retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Customer Management (Admin Only)
+  /api/v1/admin/customers:
+    get:
+      summary: List customers
+      description: Get paginated list of customers with optional search
+      tags:
+        - Customer Management
+        - Admin
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Customers retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  customers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Customer'
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
+                      total:
+                        type: integer
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Create customer
+      description: Create a new customer account
+      tags:
+        - Customer Management
+        - Admin
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerCreateRequest'
+      responses:
+        '201':
+          description: Customer created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  customer:
+                    $ref: '#/components/schemas/Customer'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/admin/customers/{customer_id}:
+    get:
+      summary: Get customer details
+      description: Retrieve specific customer information
+      tags:
+        - Customer Management
+        - Admin
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: customer_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Customer details retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  customer:
+                    $ref: '#/components/schemas/Customer'
+        '404':
+          description: Customer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      summary: Update customer
+      description: Update customer information
+      tags:
+        - Customer Management
+        - Admin
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: customer_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerUpdateRequest'
+      responses:
+        '200':
+          description: Customer updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  customer:
+                    $ref: '#/components/schemas/Customer'
+        '404':
+          description: Customer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: Soft delete customer
+      description: Soft delete a customer account
+      tags:
+        - Customer Management
+        - Admin
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: customer_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Customer deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          description: Customer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Subscription Pack Management (Admin Only)
+  /api/v1/admin/subscription-packs:
+    get:
+      summary: List subscription packs
+      description: Get paginated list of subscription packs
+      tags:
+        - Subscription Pack Management
+        - Admin
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Subscription packs retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  packs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SubscriptionPack'
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
+                      total:
+                        type: integer
+
+    post:
+      summary: Create subscription pack
+      description: Create a new subscription pack
+      tags:
+        - Subscription Pack Management
+        - Admin
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionPackCreateRequest'
+      responses:
+        '201':
+          description: Subscription pack created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  pack:
+                    $ref: '#/components/schemas/SubscriptionPack'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/admin/subscription-packs/{pack_id}:
+    put:
+      summary: Update subscription pack
+      description: Update subscription pack information
+      tags:
+        - Subscription Pack Management
+        - Admin
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: pack_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionPackUpdateRequest'
+      responses:
+        '200':
+          description: Subscription pack updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  pack:
+                    $ref: '#/components/schemas/SubscriptionPack'
+        '404':
+          description: Subscription pack not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: Soft delete subscription pack
+      description: Soft delete a subscription pack
+      tags:
+        - Subscription Pack Management
+        - Admin
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: pack_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Subscription pack deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          description: Subscription pack not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Subscription Assignment Management (Admin Only)
+  /api/v1/admin/subscriptions:
+    get:
+      summary: List all subscriptions
+      description: Get paginated list of all subscriptions with optional status filter
+      tags:
+        - Subscription Management
+        - Admin
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [requested, approved, active, inactive, expired]
+      responses:
+        '200':
+          description: Subscriptions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  subscriptions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Subscription'
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
+                      total:
+                        type: integer
+
+  /api/v1/admin/subscriptions/{subscription_id}/approve:
+    post:
+      summary: Approve subscription request
+      description: Approve a pending subscription request
+      tags:
+        - Subscription Management
+        - Admin
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: subscription_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Subscription approved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /api/v1/admin/customers/{customer_id}/assign-subscription:
+    post:
+      summary: Assign subscription to customer
+      description: Directly assign a subscription pack to a customer
+      tags:
+        - Subscription Management
+        - Admin
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: customer_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignSubscriptionRequest'
+      responses:
+        '200':
+          description: Subscription assigned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /api/v1/admin/customers/{customer_id}/subscription/{subscription_id}:
+    delete:
+      summary: Unassign subscription
+      description: Remove subscription assignment from customer
+      tags:
+        - Subscription Management
+        - Admin
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: customer_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: subscription_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Subscription unassigned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  # Customer Self-Service APIs
+  /api/v1/customer/subscription:
+    get:
+      summary: Get customer's current subscription
+      description: Retrieve customer's active subscription information
+      tags:
+        - Customer Self-Service
+        - Subscription
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Current subscription retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerSubscriptionResponse'
+        '404':
+          description: No active subscription found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Request new subscription
+      description: Submit subscription request for a specific pack
+      tags:
+        - Customer Self-Service
+        - Subscription
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionRequest'
+      responses:
+        '201':
+          description: Subscription request submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionCreateResponse'
+        '400':
+          description: Validation error or active subscription exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: Deactivate current subscription
+      description: Deactivate customer's active subscription
+      tags:
+        - Customer Self-Service
+        - Subscription
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Subscription deactivated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeactivateResponse'
+        '404':
+          description: No active subscription found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/customer/subscription-history:
+    get:
+      summary: Get subscription history
+      description: Retrieve customer's subscription history with pagination
+      tags:
+        - Customer Self-Service
+        - Subscription
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        '200':
+          description: Subscription history retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionHistoryResponse'
+
+  # SDK APIs
+  /sdk/auth/login:
+    post:
+      summary: SDK authentication
+      description: Authenticate customer for SDK usage and return API key
+      tags:
+        - SDK Authentication
+        - SDK
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerLoginRequest'
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SDKAuthResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /sdk/v1/subscription:
+    get:
+      summary: Get current subscription (SDK)
+      description: Retrieve customer's current subscription for SDK
+      tags:
+        - SDK Subscription
+        - SDK
+      security:
+        - SDKApiKey: []
+      responses:
+        '200':
+          description: Current subscription retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  subscription:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      pack_name:
+                        type: string
+                        example: "Premium Plan"
+                      pack_sku:
+                        type: string
+                        example: "premium-plan"
+                      price:
+                        type: number
+                        format: float
+                        example: 29.99
+                      status:
+                        type: string
+                        enum: [requested, approved, active, inactive, expired]
+                        example: "active"
+                      assigned_at:
+                        type: string
+                        format: date-time
+                        example: "2024-01-01T00:00:00Z"
+                      expires_at:
+                        type: string
+                        format: date-time
+                        example: "2025-01-01T00:00:00Z"
+                      is_valid:
+                        type: boolean
+                        example: true
+        '404':
+          description: No active subscription found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Request new subscription (SDK)
+      description: Submit subscription request using pack SKU for SDK
+      tags:
+        - SDK Subscription
+        - SDK
+      security:
+        - SDKApiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - pack_sku
+              properties:
+                pack_sku:
+                  type: string
+                  example: "premium-plan"
+      responses:
+        '201':
+          description: Subscription request submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionCreateResponse'
+        '400':
+          description: Validation error or active subscription exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: Deactivate current subscription (SDK)
+      description: Deactivate customer's active subscription for SDK
+      tags:
+        - SDK Subscription
+        - SDK
+      security:
+        - SDKApiKey: []
+      responses:
+        '200':
+          description: Subscription deactivated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeactivateResponse'
+        '404':
+          description: No active subscription found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /sdk/v1/subscription-history:
+    get:
+      summary: Get subscription history (SDK)
+      description: Retrieve customer's subscription history for SDK
+      tags:
+        - SDK Subscription
+        - SDK
+      security:
+        - SDKApiKey: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        '200':
+          description: Subscription history retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionHistoryResponse'
