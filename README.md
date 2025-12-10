@@ -227,6 +227,3 @@ Create a `.env` file in the backend directory with:
 - **OpenAPI Specification**: See `openapi.yaml` for complete API specification
 
 ---
-
-**Last Updated:** December 2024  
-**Version:** 1.0.0
